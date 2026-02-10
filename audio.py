@@ -2,6 +2,8 @@ import random
 import subprocess
 import time
 
+ffplay_process = None
+
 def get_duration(path):
     result = subprocess.run(
         [
@@ -18,6 +20,7 @@ def get_duration(path):
 
 
 def play_random_clip(path, clip_length=5):
+    stop_audio()
     duration = get_duration(path)
 
     if duration <= clip_length:
@@ -25,7 +28,8 @@ def play_random_clip(path, clip_length=5):
 
     start = random.uniform(0, duration - clip_length)
 
-    subprocess.run([
+    global ffplay_process
+    ffplay_process = subprocess.Popen([
         "ffplay",
         "-ss", str(start),
         "-t", str(clip_length),
@@ -48,7 +52,9 @@ def create_random_clip(path, clip_length=5):
     return start
 
 def play_clip(path, start, clip_length):
-    subprocess.run([
+    global ffplay_process
+    stop_audio()
+    ffplay_process = subprocess.Popen([
         "ffplay",
         "-ss", str(start),
         "-t", str(clip_length),
@@ -60,3 +66,15 @@ def play_clip(path, start, clip_length):
         "-window_title", "DCI Quiz",
         path
     ])
+
+def stop_audio():
+    global ffplay_process
+    if ffplay_process is None:
+        return
+    if ffplay_process.poll() is None:
+        ffplay_process.terminate()
+        try:
+            ffplay_process.wait(timeout=1)
+        except subprocess.TimeoutExpired:
+            ffplay_process.kill()
+    ffplay_process = None

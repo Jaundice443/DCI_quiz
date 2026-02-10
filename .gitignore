@@ -3,7 +3,7 @@ __pycache__/
 *.pyc
 
 # Audio files
-DCI_audio/*.mp3
+DCI_Audio/*.mp3
 
 # Virtual environments
 venv/

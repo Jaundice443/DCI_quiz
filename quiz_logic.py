@@ -3,7 +3,7 @@ from audio import *
 from DCIshow import DCIshow
 import threading
 
-CLIP_LENGTH = 7
+CLIP_LENGTH = 5
 NUM_ROUNDS = 5
 
 def get_corps_options():
@@ -18,18 +18,32 @@ def get_placement_options():
 
 class QuizQuestion:
     def __init__(self):
+        self.num_rounds = NUM_ROUNDS
+        self.question_index = 1
+        self.total_points = 0
+        self._load_new_question()
+
+    def _load_new_question(self):
         self.current_show = random.choice(show_list) #Picks random show
         self.path = self.current_show.get_path()
         self.clip_start = create_random_clip(self.path, CLIP_LENGTH)
         self.earned_points = 0
-
-        
 
     def gui_play_clip(self, on_finished):
 
         play_clip(self.path, self.clip_start, CLIP_LENGTH)
 
         on_finished()
+
+    def can_advance(self):
+        return self.question_index < self.num_rounds
+
+    def advance_question(self):
+        if not self.can_advance():
+            return False
+        self.question_index += 1
+        self._load_new_question()
+        return True
     
     def submit_answer(self, title_guess, corps_guess, year_guess, placement_guess):
         correct_title = self.current_show.get_title()
@@ -65,7 +79,8 @@ class QuizQuestion:
                 results_dict["is_placement_correct"] = True
             else:
                 results_dict["is_placement_correct"] = False
-            
+
+            self.total_points += self.earned_points
             return results_dict
             
 

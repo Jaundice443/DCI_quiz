@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from quiz_logic import *
 import threading
+import audio
 
 quiz = QuizQuestion()
 
@@ -17,6 +18,31 @@ card.place(relx=0.5, rely=0.5, anchor="center")
 title = tk.Label(card, text="DRUM CORPS QUIZ", font=("Comic Sans MS", 30, "bold"), bg="white", fg="#0E151C")
 title.pack(pady=20)
 
+header_row = tk.Frame(card, bg="white")
+header_row.pack(fill="x", padx=40, pady=(0, 10))
+header_row.grid_columnconfigure(0, weight=1)
+header_row.grid_columnconfigure(1, weight=0)
+header_row.grid_columnconfigure(2, weight=1)
+
+question_label = tk.Label(
+    header_row,
+    text=f"Question {quiz.question_index}/{quiz.num_rounds}",
+    font=("Arial", 12),
+    bg="white",
+    fg="#0E151C"
+)
+question_label.grid(row=0, column=1)
+
+total_points_label = tk.Label(
+    header_row,
+    text=f"Total Points: {quiz.total_points}",
+    font=("Arial", 12, "bold"),
+    justify="left",
+    fg="black",
+    bg="white"
+)
+total_points_label.grid(row=0, column=2, sticky="w", padx=(10, 0))
+
 content_row = tk.Frame(card, bg="white")
 content_row.pack(pady=10, fill="x")
 
@@ -25,7 +51,7 @@ left_frame = tk.Frame(content_row, bg="white")
 left_frame.pack(side="left", padx=(50, 40), anchor="n")
 
 #Results side
-right_frame = tk.Frame(content_row, bg="black")
+right_frame = tk.Frame(content_row, bg="white")
 right_frame.pack(side="left", padx=(40, 60), anchor="n")
 
 correct_img = tk.PhotoImage(file=r"C:\Users\Tyler\Projects\DCI_quiz\gui_files\images\correct.png")
@@ -42,6 +68,7 @@ feedback_label = tk.Label(
     bg="white"
 )
 feedback_label.pack(anchor="n")
+
 
 tk.Label(left_frame, text="Enter Show Title:", justify="left", bg="white").grid(row=0, column=0, padx=(20, 5), sticky="w")
 
@@ -142,6 +169,10 @@ hint_btn = tk.Button(
 )
 hint_btn.grid(row=0, column=2, padx=10)
 
+hint_menu = tk.Menu(root, tearoff=0)
+hint_menu.add_command(label="Extend clip", command=lambda: extend_clip())
+hint_menu.add_command(label="Play different clip", command=lambda: different_clip())
+
 next_button = tk.Button(
     button_frame,
     text=">> Next Question",
@@ -151,28 +182,30 @@ next_button = tk.Button(
 )
 next_button.grid(row=0, column=3, padx=10)
 
-status = tk.Label(root, text="Ready")
-status.pack()
-
 #_____________FUNCTIONS_____________________________
 
 def on_clip_finished():
-    # This runs in the audio thread → schedule UI update
-    root.after(0, lambda: (
-        play_btn.config(state="normal"),
-        status.config(text="Ready")
-    ))
+    play_btn.config(state="normal"),
+    hint_btn.config(state="normal")
 
-def start_playback():
-    play_btn.config(state="disabled")
-    status.config(text="Playing...")
+def check_clip_done():
+    print(audio.ffplay_process)
+    if audio.ffplay_process is None or audio.ffplay_process.poll() is not None:
+        print("Clip finished")
+        on_clip_finished()
+    else:
+        root.after(100, check_clip_done)
 
-    thread = threading.Thread(
-        target=quiz.gui_play_clip,
-        args=(on_clip_finished,),
-        daemon=True
-    )
-    thread.start()
+def start_playback(start=None, clip_length=None, disable_hint=False):
+    # play_btn.config(state="disabled")
+    # hint_btn.config(state="disabled")
+
+    if start is None:
+        start = quiz.clip_start
+    if clip_length is None:
+        clip_length = CLIP_LENGTH
+    play_clip(quiz.path, start, clip_length)
+    # check_clip_done()
 
 def on_submit():
     results = quiz.submit_answer(
@@ -205,26 +238,42 @@ def on_submit():
         if(quiz.earned_points <= 1):
                fart_path = r"C:\Users\Tyler\Projects\DCI_quiz\gui_files\audio\fart2.m4a"
                play_clip(fart_path, 0, 1.30)
-    
+        total_points_label.config(text=f"Total Points: {quiz.total_points}")
+
     feedback_label.config(text=feedback_str)
 
 def on_hint():
-    hint_btn.config(state="disabled")
+    hint_menu.tk_popup(hint_btn.winfo_rootx() + 4, hint_btn.winfo_rooty() - 48)
+    hint_menu.grab_release()
 
 def extend_clip():
-    pass
+    duration = get_duration(quiz.path)
+    max_length = max(0, duration - quiz.clip_start)
+    extended_length = min(CLIP_LENGTH * 2, max_length)
+    start_playback(quiz.clip_start, extended_length, disable_hint=True)
+
 def different_clip():
-    pass
+    quiz.clip_start = create_random_clip(quiz.path, CLIP_LENGTH)
+    start_playback(quiz.clip_start, CLIP_LENGTH, disable_hint=True)
     
 def next_question(quiz):
+    stop_audio()
+    if not quiz.advance_question():
+        feedback_label.config(text=f"Quiz complete!\nTotal Points: {quiz.total_points}")
+        submit_btn.config(state="disabled")
+        next_button.config(state="disabled")
+        total_points_label.config(text=f"Total Points: {quiz.total_points}")
+        return
+
     show_title_var.set("")
     corps_var.set("Select Corps")
     year_var.set("Select Year")
     placement_var.set("Select Placement")
 
     submit_btn.config(state="normal")
-    quiz.__init__()
+    question_label.config(text=f"Question {quiz.question_index}/{quiz.num_rounds}")
     feedback_label.config(text="")
+    total_points_label.config(text=f"Total Points: {quiz.total_points}")
 
     #Reset icons
     title_mark.config(image=blank_img)
@@ -233,5 +282,10 @@ def next_question(quiz):
     placement_mark.config(image=blank_img)
 
 
+def on_close():
+    stop_audio()
+    root.destroy()
+
+root.protocol("WM_DELETE_WINDOW", on_close)
 
 root.mainloop()
