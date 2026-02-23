@@ -45,6 +45,16 @@ show_list = [
 
     DCIshow("Cadets", "2011", "Between Angels and Demons", "1st", "cadets_2011.mp3"),
     DCIshow("Cadets", "2015", "The Power of 10", "4th", "cadets_2015.mp3"),
+
+    DCIshow("Troopers", "2024", "Dance With the Devil", "10th", "troopers_2024.mp3"),
+    DCIshow("Troopers", "2025", "The Final Sunset", "10th", "troopers_2025.mp3"),
+
+    DCIshow("Colts", "2024", "On Fields", "9th", "colts_2024.mp3"),
+    DCIshow("Colts", "2025", "In Restless Dreams", "11th", "colts_2025.mp3"),
+
+    DCIshow("Blue Stars", "2024", "Universal", "8th", "bluestars_2024.mp3"),
+    DCIshow("Blue Stars", "2025", "Spectator Sport", "8th", "bluestars_2025.mp3"),
+
 ]
 
 CLIP_LENGTH = 5

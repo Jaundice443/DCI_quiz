@@ -35,14 +35,11 @@ class QuizQuestion:
 
         on_finished()
 
-    def can_advance(self):
-        return self.question_index < self.num_rounds
-
     def advance_question(self):
-        if not self.can_advance():
+        if not self.question_index < self.num_rounds:
             return False
-        self.question_index += 1
         self._load_new_question()
+        self.question_index += 1
         return True
     
     def submit_answer(self, title_guess, corps_guess, year_guess, placement_guess):

@@ -52,8 +52,8 @@ def create_random_clip(path, clip_length=5):
     return start
 
 def play_clip(path, start, clip_length):
-    global ffplay_process
     stop_audio()
+    global ffplay_process
     ffplay_process = subprocess.Popen([
         "ffplay",
         "-ss", str(start),
