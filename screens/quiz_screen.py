@@ -13,7 +13,6 @@ from quiz_logic import (
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 class QuizScreen(tk.Frame):
     def __init__(self, master, on_main_menu, on_complete):
         super().__init__(master, bg="#83a5e0")
@@ -199,34 +198,7 @@ class QuizScreen(tk.Frame):
         self.hint_menu.add_command(label="Extend clip", command=self.extend_clip)
         self.hint_menu.add_command(label="Play different clip", command=self.different_clip)
 
-        # self.completion_frame = tk.Frame(right_frame, bg="white")
-
-        # self.replay_button = tk.Button(
-        #     self.completion_frame,
-        #     text="⟳ Replay",
-        #     font=("Helvetica", 12),
-        #     width=12,
-        #     command=self.start_new_quiz,
-        # )
-        # self.replay_button.pack(side="left", padx=(0, 10))
-
-        # self.menu_button = tk.Button(
-        #     self.completion_frame,
-        #     text="Main Menu",
-        #     font=("Helvetica", 12),
-        #     width=12,
-        #     command=self._return_to_menu,
-        # )
-        # self.menu_button.pack(side="left")
-
     # ___________________FUNCTIONS_______________________
-
-    # def _hide_completion_actions(self):
-    #     self.completion_frame.pack_forget()
-
-    # def _show_completion_actions(self):
-    #     if not self.completion_frame.winfo_ismapped():
-    #         self.completion_frame.pack(anchor="n", pady=(14, 0))
 
     def _reset_answer_inputs(self):
         self.show_title_var.set("")
@@ -347,7 +319,3 @@ class QuizScreen(tk.Frame):
         )
         self.feedback_label.config(text="")
         self.total_points_label.config(text=f"Total Points: {self.quiz.total_points}")
-
-    # def _return_to_menu(self):
-    #     stop_audio()
-    #     self.on_main_menu()
