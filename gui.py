@@ -18,11 +18,9 @@ def on_close():
     stop_audio()
     root.destroy()
 
-
 def show_menu():
     stop_audio()
     menu_screen.tkraise()
-
 
 def show_quiz():
     quiz_screen.start_new_quiz()

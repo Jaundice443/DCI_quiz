@@ -22,7 +22,7 @@ class TutorialScreen(tk.Frame):
         instructions = (
             "1. Press Play Clip to hear a random segment from a drum corps show\n"
             "2. Enter the show title, then select corps, year, and placement\n"
-            "3. Press Submit to score your answer.\n"
+            "3. Press Submit to score your answer\n"
             "4. Use Hint to extend the clip or hear a different segment\n"
             "5. Press Next Question to continue"
         )

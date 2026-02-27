@@ -1,9 +1,9 @@
-from drumcorpsquiz import show_list
+from show_list import show_list
 from audio import *
 from DCIshow import DCIshow
 import threading
 
-CLIP_LENGTH = 5
+CLIP_LENGTH = 7
 NUM_ROUNDS = 5
 
 def get_corps_options():
